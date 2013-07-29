@@ -88,6 +88,26 @@ module Outbox
       end
     end
 
+    # Read an arbitrary field.
+    #
+    # Example:
+    #
+    #  message['foo'] = '1234'
+    #  message['foo'] #=> '1234'
+    def [](name)
+      @fields[name.to_sym]
+    end
+
+    # Add an arbitray field.
+    #
+    # Example:
+    #
+    #  message['foo'] = '1234'
+    #  message['foo'] #=> '1234'
+    def []=(name, value)
+      @fields[name.to_sym] = value
+    end
+
     # Returns a hash of the defined fields.
     #
     #   class SomeMessageType < Outbox::Messages::Base

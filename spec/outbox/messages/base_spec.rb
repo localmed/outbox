@@ -52,6 +52,13 @@ describe Outbox::Messages::Base do
       message.foo :bar
       expect(message.foo).to eq(:bar)
     end
+
+    it 'allows hash accessors for defined fields' do
+      message = Message.new
+      message['foo'] = :foo
+      expect(message[:foo]).to eq(:foo)
+      expect(message.foo).to eq(:foo)
+    end
   end
 
   describe '.defaults' do
