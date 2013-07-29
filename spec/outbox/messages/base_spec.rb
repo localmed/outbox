@@ -19,6 +19,8 @@ describe Outbox::Messages::Base do
   end
 
   describe '.default_client' do
+    after { Message.default_client :test }
+
     it 'sets the default client' do
       client = double :client
       allow(client).to receive(:dup) { client }
@@ -29,6 +31,8 @@ describe Outbox::Messages::Base do
   end
 
   describe '.register_client' do
+    after { Message.default_client :test }
+
     it 'registers a client alias' do
       Client = Class.new
       Message.register_client_alias :foo, Client
@@ -84,6 +88,14 @@ describe Outbox::Messages::Base do
     end
   end
 
+  describe '#audience=' do
+    it 'sets the to field by default' do
+      message = Message.new
+      message.audience = 'Bob'
+      expect(message.to).to eq('Bob')
+    end
+  end
+
   describe '#deliver' do
     context 'when valid' do
       it 'delivers the message using a client' do
@@ -92,6 +104,14 @@ describe Outbox::Messages::Base do
         message.client(client)
         expect(client).to receive(:deliver).with(message)
         message.deliver
+      end
+    end
+
+    context 'with an audience' do
+      it 'delivers to that audience' do
+        message = Message.new
+        message.deliver 'Bob'
+        expect(message.to).to eq('Bob')
       end
     end
 

@@ -26,9 +26,16 @@ module Outbox
         end
       end
 
+      # Sets the 'audience' for this message. All message types must implement
+      # this method. By default, this is an alias for a 'to' field if present.
+      def audience=(audience)
+        self.to = audience if self.respond_to?(:to=)
+      end
+
       # Validates the current message and delivers the message using the
       # defined client.
-      def deliver
+      def deliver(audience = nil)
+        self.audience = audience if audience
         validate_fields
         client.deliver(self)
       end
