@@ -1,9 +1,9 @@
 Outbox
 ======
 
-[![Gem Version](https://badge.fury.io/rb/outbox.png)](http://badge.fury.io/rb/outbox)
+Outbox is a generic interface for sending notifications using a variety of protocols, with built-in support for the most popular SaaS solutions.
 
-Outbox is a Rails Engine and generic interface for sending notifications using a variety of delivery methods, with built-in support for the most popular SaaS solutions.
+The interface is inspired by the great Mail gem.
 
 Installation
 ------------
