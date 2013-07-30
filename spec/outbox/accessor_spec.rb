@@ -29,8 +29,14 @@ describe Outbox::Accessor do
   end
 
   context 'with an object' do
+    class MockObj
+      attr_accessor :a, :b
+    end
+
     it 'reads properties it responds to' do
-      object = OpenStruct.new a: 1, b: 2
+      object = MockObj.new
+      object.a = 1
+      object.b = 2
       object_accessor = Outbox::Accessor.new(object)
       expect(object_accessor[:a]).to eq(1)
       expect(object_accessor[:b]).to eq(2)
@@ -38,12 +44,15 @@ describe Outbox::Accessor do
     end
 
     it 'writes properties it responds to' do
-      object = OpenStruct.new a: nil
+      object = MockObj.new
+      object.a = 1
       object_accessor = Outbox::Accessor.new(object)
+      expect(object_accessor[:a]).to eq(1)
       object_accessor[:a] = 2
-      object_accessor[:b] = 2
       expect(object_accessor.object.a).to eq(2)
-      expect(object_accessor.object.b).to be_nil
+      expect {
+        object_accessor[:c] = 2
+      }.not_to raise_error()
     end
   end
 end
