@@ -20,30 +20,79 @@ module Outbox
         end
       end
 
-      # Defines a field or fields which will become accessors and used by the
-      # defined client to deliver the message. Optionally, you can set certain
-      # fields to be required.
+      # Returns the defined fields for this message type.
+      #
+      #   class SomeMessageType < Outbox::Messages::Base
+      #     field :to
+      #     field :from
+      #   end
+      #
+      #   SomeMessageType.fields #=> [:to, :from]
+      #
+      # Also allows you to define multiple fields at once.
       #
       #   class SomeMessageType < Outbox::Messages::Base
       #     fields :to, :from, required: true
       #   end
-      #   message = SomeMessageType.new
-      #   message.to = 'Bob'
+      #
+      #   message = SomeMessageType.new do
+      #     to 'Bob'
+      #     from 'John'
+      #   end
       #   message.to #=> 'Bob'
-      #   message.from 'John'
       #   message.from #=> 'John'
       #   message.from = nil
       #   message.validate_fields #=> raises Outbox::MissingRequiredFieldError
       def fields(*names)
-        options = names.last.is_a?(Hash) ? names.pop : {}
-        required_fields.push(*names) if options[:required]
-        names.flatten.each do |name|
-          name = name.to_sym
-          define_field_reader(name)
-          define_field_writer(name)
+        if names.empty?
+          @fields ||= []
+        else
+          options = names.last.is_a?(Hash) ? names.pop : {}
+          names.flatten.each do |name|
+            field(name, options)
+          end
         end
       end
-      alias :field :fields
+
+      # Defines a 'field' which is a point of data for this type of data.
+      # Optionally you can set it to be required, or wether or not you want
+      # accessors defined for you. If you define your own accessors, make
+      # sure the reader also accepts a value that can be set, so it'll work
+      # with the block definition.
+      #
+      #   class SomeMessageType < Outbox::Messages::base
+      #     field :to, required: true
+      #     field :body, accessor: false
+      #
+      #     def body(value = nil)
+      #       value ? self.body = value : @body
+      #     end
+      #
+      #     def body=(value)
+      #       @body = parse_body(value)
+      #     end
+      #   end
+      #
+      #   message = SomeMessageType.new do
+      #     to 'Bob'
+      #   end
+      #   message.to #=> 'Bob'
+      #   message.to = 'John'
+      #   message.to #=> 'John'
+      #   message.to = nil
+      #   message.validate_fields #=> raises Outbox::MissingRequiredFieldError
+      def field(name, options = {})
+        name = name.to_sym
+        options = Outbox::Accessor.new(options)
+
+        fields.push(name)
+        required_fields.push(name) if options[:required]
+
+        unless options[:accessor] == false
+          define_field_reader(name) unless options[:reader] == false
+          define_field_writer(name) unless options[:writer] == false
+        end
+      end
 
       # Returns an array of the required fields for a message type.
       #
@@ -63,7 +112,9 @@ module Outbox
         if names.empty?
           @required_fields ||= []
         else
-          names << { required: true }
+          options = names.last.is_a?(Hash) ? names.pop : {}
+          options[:required] = true
+          names << options
           fields(*names)
         end
       end
@@ -123,7 +174,11 @@ module Outbox
     #   message.fields #=> { to: 'Bob', from: 'Sally' }
     def fields(new_fields = nil)
       if new_fields.nil?
-        @fields.dup
+        fields = {}
+        self.class.fields.each do |field|
+          fields[field] = self.public_send(field)
+        end
+        fields
       else
         self.fields = new_fields
       end

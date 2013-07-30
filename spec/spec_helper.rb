@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'ostruct'
+require 'mail'
 require 'outbox'
 
 RSpec.configure do |config|

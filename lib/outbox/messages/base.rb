@@ -16,8 +16,10 @@ module Outbox
       #   message.to = 'someone@example.com'
       #   message.from = 'company@example.com'
       def initialize(fields = nil, &block)
-        @fields = self.class.defaults.dup
+        @fields = {}
         @client = self.class.default_client and self.class.default_client.dup
+
+        self.fields = self.class.defaults
 
         if block_given?
           instance_eval(&block)

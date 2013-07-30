@@ -21,6 +21,12 @@ describe Outbox::Message do
     Outbox::Message.instance_variable_set :@message_types, @original_message_types
   end
 
+  describe '.message_types' do
+    it 'includes email' do
+      expect(Outbox::Message.message_types[:email]).to eq(Outbox::Messages::Email)
+    end
+  end
+
   describe '.register_message_type' do
     it 'adds a message type' do
       expect(Outbox::Message.message_types[:telepathy]).to eq(Telepathy)

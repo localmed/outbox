@@ -2,6 +2,8 @@ module Outbox
   class Message
     include MessageTypes
 
+    register_message_type :email, Outbox::Messages::Email
+
     # Make a new message. Every message can be created using a hash,
     # block, or direct assignment.
     #
@@ -31,22 +33,14 @@ module Outbox
     #   audience.sms = '+15555555555'
     #   message.deliver(audience)
     def deliver(audience)
+      audience = Outbox::Accessor.new(audience)
+
       self.class.message_types.each_key do |message_type|
         message = self.public_send(message_type)
         next if message.nil?
 
-        recipient = get_recipient_for_message_type(audience, message_type)
+        recipient = audience[message_type]
         message.deliver(recipient) if recipient
-      end
-    end
-
-    protected
-
-    def get_recipient_for_message_type(audience, message_type)
-      if audience.respond_to?(message_type)
-        audience.public_send(message_type)
-      elsif audience.respond_to?(:[])
-        audience[message_type]
       end
     end
   end

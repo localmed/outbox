@@ -2,6 +2,7 @@ module Outbox
   require 'outbox/errors'
   require 'outbox/version'
 
+  autoload 'Accessor', 'outbox/accessor'
   autoload 'Message', 'outbox/message'
   autoload 'MessageClients', 'outbox/message_clients'
   autoload 'MessageFields', 'outbox/message_fields'
@@ -13,5 +14,6 @@ module Outbox
 
   module Messages
     autoload 'Base', 'outbox/messages/base'
+    autoload 'Email', 'outbox/messages/email'
   end
 end
