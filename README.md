@@ -1,6 +1,8 @@
 Outbox
 ======
 
+[![Gem Version](https://badge.fury.io/rb/outbox.png)](http://badge.fury.io/rb/outbox)
+
 Outbox is a factory for creating notifications in a variety of protocols, including: email, SMS, and push notifications. Each protocol is built as a generic interface where the actual delivery method or service can be configured independently of the message itself.
 
 
