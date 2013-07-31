@@ -21,6 +21,6 @@ describe Outbox::Clients::TestClient do
 
   it 'saves configuration' do
     client = Outbox::Clients::TestClient.new foo: 1, bar: 2
-    expect(client.options).to eq(foo: 1, bar: 2)
+    expect(client.settings).to eq(foo: 1, bar: 2)
   end
 end

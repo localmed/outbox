@@ -5,17 +5,11 @@ module Outbox
     #
     # It also provides a template of the minimum methods required to make
     # a custom client.
-    class TestClient
+    class TestClient < Base
       # Provides a store of all the message sent with the TestClient so you
       # can check them.
       def self.deliveries
         @@deliveries ||= []
-      end
-
-      attr_reader :options
-
-      def initialize(options = {})
-        @options = options
       end
 
       def deliver(message)

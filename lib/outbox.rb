@@ -9,6 +9,8 @@ module Outbox
   autoload 'MessageTypes', 'outbox/message_types'
 
   module Clients
+    autoload 'Base', 'outbox/clients/base'
+    autoload 'MailClient', 'outbox/clients/mail_client'
     autoload 'TestClient', 'outbox/clients/test_client'
   end
 

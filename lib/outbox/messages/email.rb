@@ -1,3 +1,5 @@
+require 'mail'
+
 module Outbox
   module Messages
     # Email messages use the same interface for composing emails as
@@ -22,6 +24,10 @@ module Outbox
     #   email.client :mandrill, api_key: '...'
     #   email.deliver
     class Email < Base
+      register_client_alias :mail, Outbox::Clients::MailClient
+
+      default_client :mail
+
       required_fields :smtp_envelope_from, :smtp_envelope_to,
                       :encoded, accessor: false
 
@@ -34,8 +40,13 @@ module Outbox
              :sender, :to, :comments, :subject, accessor: false
 
       def initialize(fields = nil, &block)
-        @message = Mail::Message.new
+        @message = ::Mail::Message.new
         super
+      end
+
+      # Returns the internal Mail::Message instance
+      def message_object
+        @message
       end
 
       def audience=(audience)

@@ -26,6 +26,22 @@ describe Outbox::Messages::Email do
     expect(email.parts.length).to eq(2)
   end
 
+  describe '.registered_client_aliases' do
+    it 'includes TestClient' do
+      expect(Outbox::Messages::Email.registered_client_aliases[:test]).to eq(Outbox::Clients::TestClient)
+    end
+
+    it 'includes MailClient' do
+      expect(Outbox::Messages::Email.registered_client_aliases[:mail]).to eq(Outbox::Clients::MailClient)
+    end
+  end
+
+  describe '.default_client' do
+    it 'defaults to MailClient' do
+      expect(Outbox::Messages::Email.default_client).to be_an_instance_of(Outbox::Clients::MailClient)
+    end
+  end
+
   describe '#audience=' do
     context 'with a string' do
       it 'sets the To: field' do
