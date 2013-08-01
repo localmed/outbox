@@ -21,7 +21,7 @@ module Outbox
       #   }
       #   client.delivery_method_settings #=> { location: '/usr/bin/sendmail' }
       def delivery_method_settings
-        settings[:delivery_method_settings] || settings[:"#{delivery_method}_settings"]
+        settings[:delivery_method_settings] || settings[:"#{delivery_method}_settings"] || {}
       end
 
       def deliver(email)

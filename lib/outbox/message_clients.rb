@@ -13,13 +13,26 @@ module Outbox
       #
       #   Email.default_client :test, option: 'foo'
       #   Email.default_client #=> #<Outbox::Clients::TestClient>
-      def default_client(client = nil, options = nil)
-        if client.nil?
-          @default_client
-        else
-          @default_client = get_client(client, options)
-        end
+      def default_client(client = nil, settings = nil)
+        @default_client = get_client(client, settings) if client
+        @default_client
       end
+
+      # Sets the default client.
+      def default_client=(client)
+        @default_client = get_client(client)
+      end
+
+      # Configure the default client.
+      def default_client_settings(settings = nil)
+        if default_client.nil?
+          raise ArgumentError, 'default_client must be set before setting default_client_settings'
+        end
+
+        default_client.settings.merge!(settings) if settings
+        default_client.settings
+      end
+      alias :default_client_settings= :default_client_settings
 
       # Registers a client class with an alias.
       #

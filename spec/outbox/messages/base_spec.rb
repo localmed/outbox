@@ -40,9 +40,11 @@ describe Outbox::Messages::Base do
     field :body, writer: false
   end
 
-  describe '.default_client' do
-    after { Message.default_client :test }
+  after do
+    Message.default_client :test
+  end
 
+  describe '.default_client' do
     it 'sets the default client' do
       client = double :client
       allow(client).to receive(:dup) { client }
@@ -52,9 +54,42 @@ describe Outbox::Messages::Base do
     end
   end
 
-  describe '.register_client' do
-    after { Message.default_client :test }
+  describe '.default_client=' do
+    it 'sets the default client' do
+      client = double :client
+      allow(client).to receive(:dup) { client }
+      Message.default_client = client
+      message = Message.new
+      expect(message.client).to be(client)
+    end
+  end
 
+  describe '.default_client_settings' do
+    it 'sets the default client settings' do
+      Message.default_client_settings option_1: true
+      message = Message.new
+      expect(message.client.settings[:option_1]).to eq(true)
+    end
+
+    context 'without a default client' do
+      it 'sets the default client settings once set' do
+        Message.instance_variable_set :@default_client, nil
+        expect {
+          Message.default_client_settings option_1: true
+        }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
+  describe '.default_client_settings=' do
+    it 'sets the default client settings' do
+      Message.default_client_settings = { option_1: true }
+      message = Message.new
+      expect(message.client.settings[:option_1]).to eq(true)
+    end
+  end
+
+  describe '.register_client' do
     it 'registers a client alias' do
       client_class = Class.new
       Message.register_client_alias :foo, client_class

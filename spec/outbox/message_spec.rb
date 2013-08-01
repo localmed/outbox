@@ -1,7 +1,11 @@
 require 'spec_helper'
 
 describe Outbox::Message do
+  class MockTelepathyClient < Outbox::Clients::TestClient
+  end
+
   class Telepathy < Outbox::Messages::Base
+    register_client_alias :mock, MockTelepathyClient
     default_client :test
     fields :to, :from, :thought
 
@@ -27,6 +31,22 @@ describe Outbox::Message do
 
   after do
     Outbox::Message.instance_variable_set :@message_types, @original_message_types
+    Telepathy.instance_variable_set :@defaults, {}
+    Telepathy.default_client :test
+  end
+
+  describe '.use_test_client' do
+    after do
+      Outbox::Message.default_email_client :mail
+    end
+
+    it 'sets the default client to TestClient for all message types' do
+      Telepathy.default_client :mock
+      Outbox::Message.use_test_client
+      expect(Telepathy.default_client).to be_a(Outbox::Clients::TestClient)
+      expect(MessageInABottle.default_client).to be_a(Outbox::Clients::TestClient)
+      expect(Outbox::Messages::Email.default_client).to be_a(Outbox::Clients::TestClient)
+    end
   end
 
   describe '.message_types' do
@@ -71,20 +91,53 @@ describe Outbox::Message do
     end
   end
 
-  describe 'default message type client' do
-    after do
-      Telepathy.registered_client_aliases.delete(:foo)
-      Telepathy.default_client :test
-    end
-
+  describe '.default_[message_type]_client' do
     it 'sets the default client for that message type' do
-      client_class = Class.new
-      Telepathy.register_client_alias :foo, client_class
-      client = double :client
-      options = { option_1: 1, option_2: 2 }
-      expect(client_class).to receive(:new).with(options) { client}
-      Outbox::Message.default_telepathy_client :foo, options
+      Outbox::Message.default_telepathy_client :mock, option_1: 1
+      client = Outbox::Message.default_telepathy_client
       expect(Telepathy.default_client).to be(client)
+      expect(client).to be_a(MockTelepathyClient)
+      expect(client.settings[:option_1]).to eq(1)
+    end
+  end
+
+  describe '.default_[message_type]_client=' do
+    it 'sets the default client for that message type' do
+      Outbox::Message.default_telepathy_client = :mock
+      client = Outbox::Message.default_telepathy_client
+      expect(Telepathy.default_client).to be(client)
+      expect(client).to be_a(MockTelepathyClient)
+    end
+  end
+
+  describe '.default_[message_type]_client_settings' do
+    it 'sets the default client for that message type' do
+      Outbox::Message.default_telepathy_client_settings option_1: 1
+      client = Outbox::Message.default_telepathy_client
+      expect(client.settings[:option_1]).to eq(1)
+    end
+  end
+
+  describe '.default_[message_type]_client_settings=' do
+    it 'sets the default client for that message type' do
+      Outbox::Message.default_telepathy_client_settings = { option_1: 1 }
+      client = Outbox::Message.default_telepathy_client
+      expect(client.settings[:option_1]).to eq(1)
+    end
+  end
+
+  describe '.[message_type]_defaults' do
+    it 'sets the defaults for that message type' do
+      Outbox::Message.telepathy_defaults from: 'Me'
+      expect(Telepathy.new.from).to eq('Me')
+    end
+  end
+
+  describe '.[message_type]_defaults=' do
+    it 'sets the defaults for that message type' do
+      Outbox::Message.telepathy_defaults = { from: 'Me' }
+      expect(Outbox::Message.telepathy_defaults).to eq(Telepathy.defaults)
+      expect(Telepathy.new.from).to eq('Me')
     end
   end
 

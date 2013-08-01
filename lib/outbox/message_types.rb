@@ -26,7 +26,9 @@ module Outbox
         message_types[name.to_sym] = message_type
         define_message_type_reader(name, message_type)
         define_message_type_writer(name)
-        define_default_message_type_client_accessor(name, message_type)
+        define_default_message_type_client_accessors(name, message_type)
+        define_default_message_type_client_settings_accessors(name, message_type)
+        define_message_type_defaults_accessors(name, message_type)
       end
 
       # Returns a hash of the registred message types, where the key is the name
@@ -63,9 +65,33 @@ module Outbox
         end
       end
 
-      def define_default_message_type_client_accessor(name, message_type)
+      def define_default_message_type_client_accessors(name, message_type)
         define_singleton_method "default_#{name}_client" do |*args|
           message_type.default_client(*args)
+        end
+
+        define_singleton_method "default_#{name}_client=" do |client|
+          message_type.default_client = client
+        end
+      end
+
+      def define_default_message_type_client_settings_accessors(name, message_type)
+        define_singleton_method "default_#{name}_client_settings" do |*args|
+          message_type.default_client_settings(*args)
+        end
+
+        define_singleton_method "default_#{name}_client_settings=" do |settings|
+          message_type.default_client_settings = settings
+        end
+      end
+
+      def define_message_type_defaults_accessors(name, message_type)
+        define_singleton_method "#{name}_defaults" do |*args|
+          message_type.defaults(*args)
+        end
+
+        define_singleton_method "#{name}_defaults=" do |defaults|
+          message_type.defaults = defaults
         end
       end
     end

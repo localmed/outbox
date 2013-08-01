@@ -15,13 +15,10 @@ module Outbox
       #   message.from #=> 'bob@example.com'
       def defaults(defaults = nil)
         @defaults ||= {}
-
-        if defaults.nil?
-          @defaults
-        else
-          @defaults.merge!(defaults)
-        end
+        @defaults.merge!(defaults) if defaults
+        @defaults
       end
+      alias :defaults= :defaults
 
       # Returns the defined fields for this message type.
       #

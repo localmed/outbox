@@ -4,6 +4,14 @@ module Outbox
 
     register_message_type :email, Outbox::Messages::Email
 
+    # Use the Outbox::Clients::TestClient for all message types. This is
+    # useful for testing or working an a development environment.
+    def self.use_test_client
+      message_types.each_value do |message_type|
+        message_type.default_client(:test)
+      end
+    end
+
     # Make a new message. Every message can be created using a hash,
     # block, or direct assignment.
     #
