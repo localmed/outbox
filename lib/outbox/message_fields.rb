@@ -1,10 +1,13 @@
 module Outbox
   module MessageFields
     def self.included(base)
+      base.extend Outbox::DefineInheritableMethod
       base.extend ClassMethods
     end
 
     module ClassMethods
+      DYNAMIC_MODULE_NAME = :DynamicFields
+
       # Sets default values for defined fields.
       #
       #   Email.defaults from: 'bob@example.com'
@@ -123,7 +126,7 @@ module Outbox
       protected
 
       def define_field_reader(name)
-        define_method(name) do |value = nil|
+        define_inheritable_method(DYNAMIC_MODULE_NAME, name) do |value = nil|
           if value.nil?
             @fields[name]
           else
@@ -133,7 +136,7 @@ module Outbox
       end
 
       def define_field_writer(name)
-        define_method("#{name}=") do |value|
+        define_inheritable_method(DYNAMIC_MODULE_NAME, "#{name}=") do |value|
           @fields[name] = value
         end
       end

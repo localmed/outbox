@@ -1,10 +1,13 @@
 module Outbox
   module MessageTypes
     def self.included(base)
+      base.extend Outbox::DefineInheritableMethod
       base.extend ClassMethods
     end
 
     module ClassMethods
+      DYNAMIC_MODULE_NAME = :DynamicMessageTypes
+
       # Registers a message type for sending & creates accessors.
       #
       #   Message.register_message_type :telepathy, TelepathyMessage
@@ -23,6 +26,7 @@ module Outbox
         message_types[name.to_sym] = message_type
         define_message_type_reader(name, message_type)
         define_message_type_writer(name)
+        define_default_message_type_client_accessor(name, message_type)
       end
 
       # Returns a hash of the registred message types, where the key is the name
@@ -35,27 +39,50 @@ module Outbox
 
       def define_message_type_reader(name, message_type)
         ivar_name = "@#{name}"
-        define_method(name) do |options = nil, &block|
-          if options || block
-            instance_variable_set(ivar_name, message_type.new(options, &block))
-          else
-            instance_variable_get(ivar_name)
+        define_inheritable_method(DYNAMIC_MODULE_NAME, name) do |fields = nil, &block|
+          instance = instance_variable_get(ivar_name)
+
+          if instance.nil? && (fields || block)
+            instance = message_type.new
+            instance_variable_set(ivar_name, instance)
           end
+
+          if block
+            instance.instance_eval(&block)
+          elsif fields
+            instance.fields = fields
+          end
+
+          instance
         end
       end
 
       def define_message_type_writer(name)
-        define_method("#{name}=") do |value|
+        define_inheritable_method(DYNAMIC_MODULE_NAME, "#{name}=") do |value|
           instance_variable_set("@#{name}", value)
+        end
+      end
+
+      def define_default_message_type_client_accessor(name, message_type)
+        define_singleton_method "default_#{name}_client" do |*args|
+          message_type.default_client(*args)
         end
       end
     end
 
-    protected
-
+    # Assign the given hash where each key is a message type and
+    # the value is a hash of options for that message type.
     def assign_message_type_values(values)
       values.each do |key, value|
         self.public_send(key, value) if self.respond_to?(key)
+      end
+    end
+
+    # Loops through each registered message type and yields the instance
+    # of that type on this message.
+    def each_message_type
+      self.class.message_types.each_key do |message_type|
+        yield message_type, self.public_send(message_type)
       end
     end
   end

@@ -19,37 +19,19 @@ describe Outbox::Messages::Base do
   end
 
   class MessageWithoutFieldAccessors < Outbox::Messages::Base
-    attr_reader :to_reader_called, :to_writer_called,
-                :from_reader_called, :from_writer_called,
-                :body_reader_called, :body_writer_called
-
     def to(value = nil)
-      @to_reader_called = true
       value ? @to = value : @to
     end
 
     def to=(value)
-      @to_writer_called = true
       @to = value
     end
 
     def from(value = nil)
-      @from_reader_called = true
       value ? @fields[:from] = value : @fields[:from]
     end
 
-    def from=(value)
-      @from_writer_called = true
-      @fields[:from] = value
-    end
-
-    def body
-      @body_reader_called = true
-      @fields[:body]
-    end
-
     def body=(value)
-      @body_writer_called = true
       @fields[:body] = value
     end
 
@@ -74,11 +56,11 @@ describe Outbox::Messages::Base do
     after { Message.default_client :test }
 
     it 'registers a client alias' do
-      Client = Class.new
-      Message.register_client_alias :foo, Client
+      client_class = Class.new
+      Message.register_client_alias :foo, client_class
       client = double :client
       options = { option_1: 1, option_2: 2 }
-      expect(Client).to receive(:new).with(options) { client}
+      expect(client_class).to receive(:new).with(options) { client}
       Message.default_client :foo, options
       expect(Message.default_client).to be(client)
     end
@@ -101,19 +83,11 @@ describe Outbox::Messages::Base do
     end
 
     it 'does not create accessors if specified' do
-      message = MessageWithoutFieldAccessors.new
-      message.to = 'Bob'
-      message.from = 'John'
-      message.body = 'Hi'
-      expect(message.to).to eq('Bob')
-      expect(message.from).to eq('John')
-      expect(message.body).to eq('Hi')
-      expect(message.to_reader_called).to be_true
-      expect(message.to_writer_called).to be_true
-      expect(message.from_reader_called).to be_true
-      expect(message.from_writer_called).to be_false
-      expect(message.body_reader_called).to be_false
-      expect(message.body_writer_called).to be_true
+      dynamic_methods = MessageWithoutFieldAccessors::DynamicFields.public_instance_methods
+      expect(dynamic_methods).not_to include(:to=)
+      expect(dynamic_methods).not_to include(:to)
+      expect(dynamic_methods).not_to include(:from)
+      expect(dynamic_methods).not_to include(:body=)
     end
   end
 
@@ -173,6 +147,14 @@ describe Outbox::Messages::Base do
       message = Message.new
       message.audience = 'Bob'
       expect(message.to).to eq('Bob')
+    end
+  end
+
+  describe '#body=' do
+    it 'raises an error' do
+      message_type = Class.new Outbox::Messages::Base
+      message = message_type.new
+      expect{message.body = 'Something'}.to raise_error(NotImplementedError)
     end
   end
 

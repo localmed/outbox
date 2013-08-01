@@ -3,6 +3,7 @@ module Outbox
   require 'outbox/version'
 
   autoload 'Accessor', 'outbox/accessor'
+  autoload 'DefineInheritableMethod', 'outbox/define_inheritable_method'
   autoload 'Message', 'outbox/message'
   autoload 'MessageClients', 'outbox/message_clients'
   autoload 'MessageFields', 'outbox/message_fields'

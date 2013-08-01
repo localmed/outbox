@@ -23,6 +23,15 @@ module Outbox
       end
     end
 
+    # Loops through each registered message type and sets the content body.
+    def body(value)
+      each_message_type do |message_type, message|
+        next if message.nil?
+        message.body = value
+      end
+    end
+    alias :body= :body
+
     # Delivers all of the messages to the given 'audience'. An 'audience' object
     # can be a hash or an object that responds to the current message types. Only
     # the message types specified in the 'audience' object will be sent to.
@@ -35,8 +44,7 @@ module Outbox
     def deliver(audience)
       audience = Outbox::Accessor.new(audience)
 
-      self.class.message_types.each_key do |message_type|
-        message = self.public_send(message_type)
+      each_message_type do |message_type, message|
         next if message.nil?
 
         recipient = audience[message_type]

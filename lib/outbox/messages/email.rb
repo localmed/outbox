@@ -39,7 +39,9 @@ module Outbox
              :resent_message_id, :resent_sender, :resent_to, :return_path,
              :sender, :to, :comments, :subject, accessor: false
 
-      def initialize(fields = nil, &block)
+      undef :body=, :[], :[]=
+
+      def initialize(fields = nil, &block) # :nodoc:
         @message = ::Mail::Message.new
         super
       end
@@ -49,7 +51,7 @@ module Outbox
         @message
       end
 
-      def audience=(audience)
+      def audience=(audience) # :nodoc:
         case audience
         when String, Array
           self.to = audience
@@ -61,6 +63,8 @@ module Outbox
         end
       end
 
+      protected
+
       def method_missing(method, *args, &block)
         if @message.respond_to?(method)
           @message.public_send(method, *args, &block)
@@ -70,7 +74,7 @@ module Outbox
       end
 
       def respond_to_missing?(method, include_private = false)
-        @message.respond_to?(method, include_private) || super
+        super || @message.respond_to?(method, include_private)
       end
     end
   end

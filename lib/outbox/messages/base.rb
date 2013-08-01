@@ -34,6 +34,12 @@ module Outbox
         self.to = audience if self.respond_to?(:to=)
       end
 
+      # Sets the 'body' for this message. All message types must implement
+      # this method.
+      def body=(body)
+        raise NotImplementedError, 'Subclasses must implement a body= method'
+      end
+
       # Validates the current message and delivers the message using the
       # defined client.
       def deliver(audience = nil)
