@@ -18,5 +18,6 @@ module Outbox
   module Messages
     autoload 'Base', 'outbox/messages/base'
     autoload 'Email', 'outbox/messages/email'
+    autoload 'SMS', 'outbox/messages/sms'
   end
 end
