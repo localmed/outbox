@@ -15,7 +15,15 @@ module Outbox
     class SMS < Base
       required_fields :to, :from, :body
 
-      fields :type, :reference, :vcard, :vcal, :callback, :application_id
+      def audience=(audience) # :nodoc:
+        case audience
+        when String
+          self.to = audience
+        else
+          audience = Outbox::Accessor.new(audience)
+          self.to = audience[:to]
+        end
+      end
     end
   end
 end

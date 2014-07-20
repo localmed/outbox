@@ -3,6 +3,7 @@ module Outbox
     include MessageTypes
 
     register_message_type :email, Outbox::Messages::Email
+    register_message_type :sms, Outbox::Messages::SMS
 
     # Use the Outbox::Clients::TestClient for all message types. This is
     # useful for testing or working an a development environment.
