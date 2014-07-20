@@ -26,23 +26,24 @@ module Outbox
     def initialize(message_type_values = nil, &block)
       if block_given?
         instance_eval(&block)
-      else
-        assign_message_type_values(message_type_values) unless message_type_values.nil?
+      elsif message_type_values
+        assign_message_type_values(message_type_values)
       end
     end
 
     # Loops through each registered message type and sets the content body.
     def body(value)
-      each_message_type do |message_type, message|
+      each_message_type do |_, message|
         next if message.nil?
         message.body = value
       end
     end
-    alias :body= :body
+    alias_method :body=, :body
 
-    # Delivers all of the messages to the given 'audience'. An 'audience' object
-    # can be a hash or an object that responds to the current message types. Only
-    # the message types specified in the 'audience' object will be sent to.
+    # Delivers all of the messages to the given 'audience'. An 'audience'
+    # object can be a hash or an object that responds to the current message
+    # types. Only the message types specified in the 'audience' object will
+    # be sent to.
     #
     #   message.deliver email: 'hello@example.com', sms: '+15555555555'
     #   audience = OpenStruct.new

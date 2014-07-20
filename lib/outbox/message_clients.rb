@@ -32,7 +32,7 @@ module Outbox
         default_client.settings.merge!(settings) if settings
         default_client.settings
       end
-      alias :default_client_settings= :default_client_settings
+      alias_method :default_client_settings=, :default_client_settings
 
       # Registers a client class with an alias.
       #

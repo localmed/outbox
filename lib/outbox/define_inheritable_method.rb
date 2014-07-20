@@ -14,11 +14,10 @@ module Outbox
     protected
 
     def get_inheritable_module(mod_name)
-      if const_defined?(mod_name, _search_ancestors = false)
-        mod = const_get(mod_name)
+      if const_defined?(mod_name, false)
+        const_get(mod_name)
       else
-        mod = const_set(mod_name, Module.new)
-        include mod
+        include const_set(mod_name, Module.new)
       end
     end
   end

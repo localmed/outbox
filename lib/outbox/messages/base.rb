@@ -7,7 +7,10 @@ module Outbox
       # Make a new message. Every message type can be created using a hash,
       # block, or direct assignment.
       #
-      #   message = Email.new to: 'someone@example.com', from: 'company@example.com'
+      #   message = Email.new(
+      #     to: 'someone@example.com',
+      #     from: 'company@example.com'
+      #   )
       #   message = Email.new do
       #     to 'someone@example.com'
       #     from 'company@example.com'
@@ -17,7 +20,11 @@ module Outbox
       #   message.from = 'company@example.com'
       def initialize(fields = nil, &block)
         @fields = {}
-        @client = self.class.default_client and self.class.default_client.dup
+        if self.class.default_client
+          @client = self.class.default_client.dup
+        else
+          @client = nil
+        end
 
         self.fields = self.class.defaults
 

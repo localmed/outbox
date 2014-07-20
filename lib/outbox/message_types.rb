@@ -31,8 +31,8 @@ module Outbox
         define_message_type_defaults_accessors(name, message_type)
       end
 
-      # Returns a hash of the registred message types, where the key is the name
-      # of the message type and the value is the message type class.
+      # Returns a hash of the registred message types, where the key is the
+      # name of the message type and the value is the message type class.
       def message_types
         @message_types ||= {}
       end
@@ -100,7 +100,7 @@ module Outbox
     # the value is a hash of options for that message type.
     def assign_message_type_values(values)
       values.each do |key, value|
-        self.public_send(key, value) if self.respond_to?(key)
+        public_send(key, value) if respond_to?(key)
       end
     end
 
@@ -108,7 +108,7 @@ module Outbox
     # of that type on this message.
     def each_message_type
       self.class.message_types.each_key do |message_type|
-        yield message_type, self.public_send(message_type)
+        yield message_type, public_send(message_type)
       end
     end
   end

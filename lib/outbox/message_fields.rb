@@ -18,7 +18,7 @@ module Outbox
         @defaults.merge!(defaults) if defaults
         @defaults
       end
-      alias :defaults= :defaults
+      alias_method :defaults=, :defaults
 
       # Returns the defined fields for this message type.
       #
@@ -118,7 +118,7 @@ module Outbox
           fields(*names)
         end
       end
-      alias :required_field :required_fields
+      alias_method :required_field, :required_fields
 
       protected
 
@@ -176,7 +176,7 @@ module Outbox
       if new_fields.nil?
         fields = {}
         self.class.fields.each do |field|
-          fields[field] = self.public_send(field)
+          fields[field] = public_send(field)
         end
         fields
       else
@@ -191,7 +191,7 @@ module Outbox
     #   message.fields #=> { to: 'Bob', from: 'Sally' }
     def fields=(new_fields)
       new_fields.each do |field, value|
-        self.public_send(field, value) if self.respond_to?(field)
+        public_send(field, value) if respond_to?(field)
       end
     end
 
@@ -199,9 +199,9 @@ module Outbox
     # validation issues.
     def validate_fields
       self.class.required_fields.each do |field|
-        value = self.public_send(field)
+        value = public_send(field)
         if value.nil? || value.respond_to?(:empty?) && value.empty?
-          raise Outbox::MissingRequiredFieldError.new("Missing required field: #{field}")
+          raise Outbox::MissingRequiredFieldError, "Missing required field: #{field}"
         end
       end
     end

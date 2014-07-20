@@ -11,17 +11,23 @@ module Outbox
       # Returns the configured delivery method settings. This will also check
       # the Rails-style #{delivery_method}_settings key as well.
       #
-      #   client = Outbox::Clients::MailClient.new delivery_method: :sendmail, delivery_method_settings: {
-      #     location: '/usr/bin/sendmail'
-      #   }
+      #   client = Outbox::Clients::MailClient.new(
+      #     delivery_method: :sendmail,
+      #     delivery_method_settings: { location: '/usr/bin/sendmail' }
+      #   )
       #   client.delivery_method_settings #=> { location: '/usr/bin/sendmail' }
       #
-      #   client = Outbox::Clients::MailClient.new delivery_method: :sendmail, sendmail_settings: {
-      #     location: '/usr/bin/sendmail'
-      #   }
+      #   client = Outbox::Clients::MailClient.new(
+      #     delivery_method: :sendmail,
+      #     sendmail_settings: { location: '/usr/bin/sendmail' }
+      #   )
       #   client.delivery_method_settings #=> { location: '/usr/bin/sendmail' }
       def delivery_method_settings
-        settings[:delivery_method_settings] || settings[:"#{delivery_method}_settings"] || {}
+        (
+          settings[:delivery_method_settings] ||
+          settings[:"#{delivery_method}_settings"] ||
+          {}
+        )
       end
 
       def deliver(email)
