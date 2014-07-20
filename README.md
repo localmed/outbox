@@ -34,13 +34,15 @@ This gem is still in early development with plans to support email, SMS, and pus
 
 ### Email
 
-| Service                                   | Alias   | Client     |
-|-------------------------------------------|---------|------------|
-| [Mail gem](https://github.com/mikel/mail) | `:mail` | MailClient |
+| Service                                   | Alias   | Client                        | Gem      |
+|-------------------------------------------|---------|-------------------------------|----------|
+| [Mail gem](https://github.com/mikel/mail) | `:mail` | `Outbox::Clients::MailClient` | Included |
 
 ### SMS
 
-TODO…
+| Service                                         | Alias     | Client                   | Gem                                                        |
+|-------------------------------------------------|-----------|--------------------------|------------------------------------------------------------|
+| [Twilio](https://github.com/twilio/twilio-ruby) | `:twilio` | `Outbox::Twilio::Client` | [outbox-twilio](https://github.com/localmed/outbox-twilio) |
 
 ### Push
 
@@ -67,7 +69,7 @@ message = Outbox::Message.new do
   end
 
   ios_push do
-    badget '+1'
+    badge '+1'
     sound 'default'
   end
 
@@ -75,7 +77,11 @@ message = Outbox::Message.new do
 end
 
 # This will deliver the message to User's given contact points.
-message.deliver email: 'user@gmail.com', sms: '+15551234567', ios_push: 'FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660'
+message.deliver(
+  email: 'user@gmail.com',
+  sms: '+15551234567',
+  ios_push: 'FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660'
+)
 ```
 
 ### Making an email
@@ -108,7 +114,55 @@ email.deliver
 Configuration
 -------------
 
-TODO...
+Configuration can be done in two ways:
+
+### 1. Configure clients as you need them
+
+``` ruby
+mail_client = Outbox::Clients::MailClient.new(
+  delivery_method: :smtp,
+  smtp_settings: {}
+)
+sms_client = Outbox::Twilio::Client.new(
+  account_sid: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  auth_token: 'yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'
+)
+message = Outbox::Message.new do
+  email do
+    client(mail_client)
+    # content...
+  end
+
+  sms do
+    client(sms_client)
+    # content...
+  end
+end
+```
+
+### 2. Configure a default client for each message type
+
+``` ruby
+Outbox::Messages::Email.default_client(
+  :mail,
+  delivery_method: :smtp,
+  smtp_settings: {}
+)
+Outbox::Messages::SMS.default_client(
+  :twilio,
+  account_sid: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  auth_token: 'yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'
+)
+message = Outbox::Message.new do
+  email do
+    # content...
+  end
+
+  sms do
+    # content...
+  end
+end
+```
 
 Contributing
 ------------
